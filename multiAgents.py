@@ -291,6 +291,48 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
+        def max_value(gameState, agent_index, depth= 0):
+            pref_action = None
+            max = float('-inf')
+
+            if (gameState.isLose() or gameState.isWin() or (depth == self.depth)):
+                return [self.evaluationFunction(gameState)]
+            else:
+                next_agent_index = agent_index + 1
+
+            for legalAction in gameState.getLegalActions(agent_index):
+                    successorGameState = gameState.generateSuccessor(agent_index, legalAction)
+                    new_max =  min_value(successorGameState, next_agent_index, depth)[0]
+                    if new_max == max:
+                        if bool(random.getrandbits(1)):
+                            pref_action = legalAction
+                    elif new_max > max:
+                        max = new_max
+                        pref_action = legalAction
+            return max, pref_action
+
+        def min_value(gameState, agent_index, depth= 0):    
+            agent_len = gameState.getNumAgents() - 1
+            pref_action = None
+            min = 0
+
+            if (gameState.isLose() or gameState.isWin() or (depth == self.depth)):
+                return [self.evaluationFunction(gameState)]
+            elif agent_index == agent_len:
+                depth += 1
+                next_agent_index = self.index
+            else:
+                next_agent_index = agent_index + 1
+
+            for legalAction in gameState.getLegalActions(agent_index):
+                    successorGameState = gameState.generateSuccessor(agent_index, legalAction)
+                    if not (next_agent_index == self.index):
+                        min += ((1.0 / len(gameState.getLegalActions(agent_index))) * min_value(successorGameState, next_agent_index, depth)[0])
+                    else:
+                        min += ((1.0 / len(gameState.getLegalActions(agent_index))) * max_value(successorGameState, next_agent_index, depth)[0])
+            return min, pref_action
+
+        return max_value(gameState, self.index)[1]
         util.raiseNotDefined()
 
 
